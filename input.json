@@ -1,0 +1,29 @@
+{
+    "top_10_priority": [
+        {
+            "id": "1ea60891-1098-400e-8e11-c7cac5b0b494",
+            "description": "Explicit debt marker found (TODO) at line 11: self.markers = [r\"TODO\", r\"FIXME\", r\"HACK\", r\"OPTIMIZE\"]",
+            "file": ".\\analyzer.py"
+        },
+        {
+            "id": "eb05cd3d-961c-4446-9017-b715e29d6529",
+            "description": "Explicit debt marker found (FIXME) at line 11: self.markers = [r\"TODO\", r\"FIXME\", r\"HACK\", r\"OPTIMIZE\"]",
+            "file": ".\\analyzer.py"
+        },
+        {
+            "id": "b10f3382-d1d8-49b1-adb3-c22a95ad97ae",
+            "description": "Explicit debt marker found (HACK) at line 11: self.markers = [r\"TODO\", r\"FIXME\", r\"HACK\", r\"OPTIMIZE\"]",
+            "file": ".\\analyzer.py"
+        },
+        {
+            "id": "3f544f62-093b-4855-95c6-dea2cafd212b",
+            "description": "Explicit debt marker found (OPTIMIZE) at line 11: self.markers = [r\"TODO\", r\"FIXME\", r\"HACK\", r\"OPTIMIZE\"]",
+            "file": ".\\analyzer.py"
+        },
+        {
+            "id": "47e2c52c-f2a7-45e0-862f-34b2cbfd49be",
+            "description": "Explicit debt marker found (OPTIMIZE) at line 12: # Using Gemini 1.5 Flash - optimized for speed and high-volume code analysis",
+            "file": ".\\llm\\config.py"
+        }
+    ]
+}

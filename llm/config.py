@@ -1,14 +1,20 @@
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from the .env file in the /llm directory
+# Load environment variables from the .env file
 load_dotenv()
 
 class Config:
-    # --- AWS Bedrock Settings ---
-    REGION = os.getenv("AWS_REGION", "us-east-1")
-    MODEL_ID = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+    # --- Gemini API Settings ---
+    # Fetched from your .env file
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     
+    # Using Gemini 1.5 Flash - optimized for speed and high-volume code analysis
+    MODEL_ID = "gemini-1.5-flash"
+    
+    # Base URL for the Google AI Studio API
+    GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_ID}:generateContent"
+
     # --- Inference Parameters ---
     TEMPERATURE = 0.2
     MAX_TOKENS = 2500
@@ -19,5 +25,6 @@ class Config:
     PROMPTS_DIR = os.path.join(BASE_DIR, "prompts")
 
     # --- File System Paths (Input/Output) ---
+    # These point to your master files in the tech-debt-quantifier root folder
     INPUT_FILE = os.path.abspath(os.path.join(BASE_DIR, "..", "input.json"))
     OUTPUT_FILE = os.path.abspath(os.path.join(BASE_DIR, "..", "output.json"))
