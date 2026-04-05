@@ -61,7 +61,7 @@ with col_search:
 if analyze_pressed:
     with st.spinner("Cloning repository, mapping dependencies, and running AI analysis..."):
         try:
-            res = requests.post("http://localhost:8000/analyze-repo", json={"github_url": repo_url})
+            res = requests.post("https://tech-debt-quantifier.onrender.com/analyze-repo", json={"github_url": repo_url})
             
             if res.status_code != 200:
                 st.error(f"Backend Error: {res.text}")
