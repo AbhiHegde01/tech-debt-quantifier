@@ -1,48 +1,35 @@
 import json
 import requests
-import time
 import os
 import re
 
 class LLMService:
     def __init__(self):
-        # First tries to get the key from Render's secure Environment Variables.
-        # If it's running locally and can't find it, it falls back to your hardcoded key.
-        self.api_key = os.environ.get("GEMINI_API_KEY")
-        if not self.api_key:
-            self.api_key = "AIzaSyDUI-t-lIlYYpXZ2ILSwEHwFUdd9ZQmV_M" 
-            
-        self.model = "gemini-3-flash"
+        # Grabs the key from Render. (Make sure your Render Environment Variable is exactly GEMINI_API_KEY)
+        self.api_key = os.environ.get("GEMINI_API_KEY") 
+        self.model = "gemini-1.5-flash"
         self.url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
 
     def quantify_debt(self, issue_description: str, code_context: str) -> dict:
-        """Takes raw debt data and asks Gemini for business-level quantification."""
-        
-        # ONE unified, cleanly formatted prompt string
         prompt = f"""
-        Act as an Elite Software Architect. Analyze this technical debt:
-        
+        Analyze this technical debt:
         Issue: {issue_description}
+        Code Context: {code_context[:3000]}
         
-        Code Context:
-        {code_context}
-        
-        You MUST return your analysis as a raw, valid JSON object. Do not wrap it in markdown blockquotes (```json). 
-        You MUST use these exact keys:
+        Return ONLY a raw JSON object. Do not include any explanations or markdown formatting. Use these exact keys:
         {{
             "technical_debt_score": <integer from 1 to 10>,
-            "remediation_cost_hours": <integer estimating hours to fix>,
+            "remediation_cost_hours": <integer>,
             "priority": "<string: Low, Medium, High, or Critical>",
             "business_impact": {{
-                "expense": "<string describing cost impact>"
+                "expense": "<string>"
             }},
             "improvement_areas": [
-                "<string area 1>",
-                "<string area 2>"
+                "<string>",
+                "<string>"
             ],
             "efficient_replacements": [
-                "<string replacement 1>",
-                "<string replacement 2>"
+                "<string>"
             ]
         }}
         """
@@ -50,36 +37,38 @@ class LLMService:
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {
-                "response_mime_type": "application/json", 
-                "temperature": 0.2
+                "response_mime_type": "application/json", # THIS forces Google's servers to only output JSON
+                "temperature": 0.1
             }
         }
-        
-        for attempt in range(3):
-            try:
-                res = requests.post(self.url, json=payload, timeout=60)
-                res.raise_for_status()
-                
-                # Get the raw text from the AI
-                raw_text = res.json()['candidates'][0]['content']['parts'][0]['text']
-                
-                # Strip out any accidental markdown ticks just to be safe
-                clean_json = re.sub(r'```json\n|```', '', raw_text).strip()
-                
-                # Parse it into a real Python dictionary
-                return json.loads(clean_json)
-                
-            except Exception as e:
-                print(f"⚠️ API Attempt {attempt + 1} failed: {e}")
-                if "429" in str(e) or "503" in str(e):
-                    time.sleep(5)
-                    continue
-                # If it completely fails, return a safe fallback so the frontend doesn't crash
-                return {
-                    "error": str(e), 
-                    "technical_debt_score": "?",
-                    "remediation_cost_hours": "?",
-                    "priority": "Error"
-                }
-        
-        return {}
+
+        try:
+            res = requests.post(self.url, json=payload, timeout=60)
+            
+            # If Google rejects the request (e.g., bad API key), catch it immediately
+            if res.status_code != 200:
+                error_data = res.json().get('error', {}).get('message', 'Unknown API Error')
+                return self._error_response(f"Google API Error: {res.status_code} - {error_data}")
+
+            # Extract the text
+            raw_text = res.json()['candidates'][0]['content']['parts'][0]['text']
+            
+            # Clean and parse it
+            clean_json = re.sub(r'```json\n|```', '', raw_text).strip()
+            return json.loads(clean_json)
+
+        except json.JSONDecodeError as e:
+            return self._error_response(f"AI returned broken JSON. Parse Error: {str(e)}. Raw AI Text: {raw_text}")
+        except Exception as e:
+            return self._error_response(f"Server execution error: {str(e)}")
+
+    def _error_response(self, error_message: str) -> dict:
+        """Pipes the actual error directly to the Streamlit UI so we can debug it."""
+        return {
+            "technical_debt_score": 0,
+            "remediation_cost_hours": 0,
+            "priority": "CRITICAL ERROR",
+            "business_impact": {"expense": error_message},
+            "improvement_areas": ["Check the Business Impact box above for the exact error log."],
+            "efficient_replacements": ["Verify your GEMINI_API_KEY inside Render's Environment Variables."]
+        }
