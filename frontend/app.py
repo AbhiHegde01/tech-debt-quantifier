@@ -110,14 +110,20 @@ if st.session_state.api_data:
         
         if "blast_radius" in data and data["blast_radius"]:
             graph = graphviz.Digraph()
-            graph.attr(rankdir='LR', size='12,8', bgcolor='transparent') 
+            # NEW: Pushes the nodes apart so it doesn't look like a tangled hairball
+            graph.attr(rankdir='LR', bgcolor='transparent', ranksep='2', nodesep='0.3') 
             
             safe_radius = dict(list(data["blast_radius"].items())[:35])
             
             for file, imports in safe_radius.items():
-                graph.node(file, shape='box', style='filled', fillcolor='#1E1E1E', fontcolor='white', color='#00A3FF')
+                # Source files styling (Blue box)
+                graph.node(file, shape='box', style='filled', fillcolor='#1E1E1E', fontcolor='white', color='#00A3FF', penwidth='2')
+                
                 for imp in imports[:3]:
-                    graph.edge(file, imp, color='#444444')
+                    # NEW: Destination imports styling (Dark pill with Neon Green text)
+                    graph.node(imp, shape='ellipse', style='filled', fillcolor='#2B2B2B', fontcolor='#00FF88', color='#444444')
+                    # NEW: Arrow styling
+                    graph.edge(file, imp, color='#666666', arrowsize='0.7')
                     
             st.graphviz_chart(graph, use_container_width=True) 
         else:
