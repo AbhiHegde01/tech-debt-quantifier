@@ -6,8 +6,9 @@ class LLMService:
     def __init__(self):
         key = os.environ.get("GEMINI_API_KEY", "").strip()
         self.api_key = key if key else "AIzaSyDUI-t-lIlYYpXZ2ILSwEHwFUdd9ZQmV_M"
-        # THE FIX: Google requires the "-latest" tag to not throw a 404
-        self.model = "gemini-pro"
+        
+        # 2026 Reality Check: 1.0 and 1.5 models are permanently retired.
+        self.model = "gemini-2.5-flash" 
         self.url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
 
     def quantify_debt(self, issue_description: str, code_context: str) -> dict:
